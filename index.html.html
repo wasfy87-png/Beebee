@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirement & Portfolio Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-4 md:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    
+    <!-- Header -->
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-emerald-400">Interactive Retirement Planner</h1>
+        <p class="text-slate-400 text-sm mt-1">Dynamic financial independence roadmap & portfolio model (2.5% Zakat + 2.5% Lifestyle Drawdown)</p>
+      </div>
+      <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-500/20">
+        Live Model Active
+      </span>
+    </div>
+
+    <!-- Live 2.5% Value Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Target Exit Window</p>
+        <p id="card-exit-year" class="text-2xl font-extrabold text-emerald-400 mt-2">Year 3</p>
+        <p class="text-xs text-slate-500 mt-1">Selected Exit Year</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Yr 5 Monthly Value (2.5%)</p>
+        <p id="card-yr5-val" class="text-2xl font-extrabold text-slate-100 mt-2">$0</p>
+        <p class="text-xs text-slate-500 mt-1">2.5% Drawdown Value / Mo</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Yr 10 Monthly Value (2.5%)</p>
+        <p id="card-yr10-val" class="text-2xl font-extrabold text-slate-100 mt-2">$0</p>
+        <p class="text-xs text-slate-500 mt-1">2.5% Drawdown Value / Mo</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Yr 15 Monthly Value (2.5%)</p>
+        <p id="card-yr15-val" class="text-2xl font-extrabold text-slate-100 mt-2">$0</p>
+        <p class="text-xs text-slate-500 mt-1">2.5% Drawdown Value / Mo</p>
+      </div>
+    </div>
+
+    <!-- Main Section: Chart + Sliders -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Chart Area -->
+      <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-200">Portfolio Net Worth Trajectory</h2>
+          <p class="text-xs text-slate-400 mb-4">Nominal wealth trajectory vs 2.5% real purchasing power</p>
+        </div>
+        <div class="relative h-80 w-full">
+          <canvas id="portfolioChart"></canvas>
+        </div>
+        <div class="mt-4 pt-4 border-t border-slate-700/60 text-xs text-slate-400">
+          <p><span class="font-semibold text-emerald-400">3-Year Cash Buffer Strategy:</span> Keeps $180k–$200k in short-term Sukuk to absorb living needs during market down-cycles without selling equities.</p>
+        </div>
+      </div>
+
+      <!-- Interactive Controls -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-5">
+        <h2 class="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-3">Model Controls</h2>
+        
+        <!-- Slider 1: Exit Year -->
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="retireYr" class="text-slate-300">Retirement Exit Year</label>
+            <span id="retireYr-val" class="text-emerald-400 font-bold">Year 3</span>
+          </div>
+          <input type="range" id="retireYr" min="0" max="11" step="1" value="3" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+        </div>
+
+        <!-- Slider 2: Total Drawdown Rate -->
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="drawdownRate" class="text-slate-300">Total Drawdown Rate (%) (5% Default)</label>
+            <span id="drawdownRate-val" class="text-emerald-400 font-bold">5.0%</span>
+          </div>
+          <input type="range" id="drawdownRate" min="2" max="8" step="0.25" value="5.0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+        </div>
+
+        <!-- Slider 3: Net Salary -->
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="salary" class="text-slate-300">Annual Net Salary ($)</label>
+            <span id="salary-val" class="text-emerald-400 font-bold">$200,000</span>
+          </div>
+          <input type="range" id="salary" min="100000" max="400000" step="10000" value="200000" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+        </div>
+
+        <!-- Slider 4: Receivables -->
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="receivables" class="text-slate-300">Year 1 Receivables ($)</label>
+            <span id="receivables-val" class="text-emerald-400 font-bold">$431,000</span>
+          </div>
+          <input type="range" id="receivables" min="200000" max="600000" step="25000" value="431000" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+        </div>
+
+        <!-- Slider 5: Initial Portfolio -->
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="initial" class="text-slate-300">Starting Liquid Portfolio ($)</label>
+            <span id="initial-val" class="text-emerald-400 font-bold">$1,550,000</span>
+          </div>
+          <input type="range" id="initial" min="1000000" max="3000000" step="50000" value="1550000" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+        </div>
+
+        <!-- Slider 6: Return Rate -->
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="rate" class="text-slate-300">Investment Return Rate (%)</label>
+            <span id="rate-val" class="text-emerald-400 font-bold">7.5%</span>
+          </div>
+          <input type="range" id="rate" min="4" max="12" step="0.5" value="7.5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Format helper
+    const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+
+    // Dynamic Portfolio Calculation Logic
+    function calculatePortfolio(T, initial, receivables, salary, rate, retireYr) {
+      if (T === 0) return initial;
+      let w = Math.min(T, retireYr);
+      let r = rate / 100;
+      let term1 = (initial + (T >= 1 ? receivables : 0)) * Math.pow(1 + r, T);
+      let term2 = w > 0 ? (salary - (w <= 3 ? 204000 : (w <= 6 ? 180000 : 60000))) * ((Math.pow(1 + r, w) - 1) / r) * Math.pow(1 + r, T - w) : 0;
+      let term3 = T > w ? ((w < 3 ? 204000 : (w < 6 ? 180000 : 60000)) * ((Math.pow(1 + r, T - w) - 1) / r)) : 0;
+      return Math.max(0, term1 + term2 - term3);
+    }
+
+    // Chart Setup
+    const ctx = document.getElementById('portfolioChart').getContext('2d');
+    const yearsLabels = Array.from({length: 29}, (_, i) => `Yr ${i}`);
+    
+    let chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: yearsLabels,
+        datasets: [
+          {
+            label: 'Nominal Net Worth ($)',
+            data: [],
+            borderColor: '#34d399',
+            backgroundColor: 'rgba(52, 211, 153, 0.1)',
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: 'Real Value (2.5% Drawdown Adjusted)',
+            data: [],
+            borderColor: '#38bdf8',
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+          tooltip: {
+            callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmt(ctx.raw)}` }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { 
+            ticks: { color: '#64748b', font: { size: 10 }, callback: (v) => `$${v/1000000}M` },
+            grid: { color: 'rgba(255,255,255,0.05)' }
+          }
+        }
+      }
+    });
+
+    // Update Dashboard Elements
+    function updateDashboard() {
+      const retireYr = parseInt(document.getElementById('retireYr').value);
+      const drawdownRate = parseFloat(document.getElementById('drawdownRate').value);
+      const salary = parseFloat(document.getElementById('salary').value);
+      const receivables = parseFloat(document.getElementById('receivables').value);
+      const initial = parseFloat(document.getElementById('initial').value);
+      const rate = parseFloat(document.getElementById('rate').value);
+
+      // Label Updates
+      document.getElementById('retireYr-val').innerText = `Year ${retireYr}`;
+      document.getElementById('drawdownRate-val').innerText = `${drawdownRate.toFixed(1)}%`;
+      document.getElementById('salary-val').innerText = fmt(salary);
+      document.getElementById('receivables-val').innerText = fmt(receivables);
+      document.getElementById('initial-val').innerText = fmt(initial);
+      document.getElementById('rate-val').innerText = `${rate.toFixed(1)}%`;
+      document.getElementById('card-exit-year').innerText = `Year ${retireYr}`;
+
+      // Calculate Cards (2.5% Monthly Value = Half of Total Drawdown Rate)
+      const halfDrawdown = (drawdownRate / 2) / 100;
+      
+      const pYr5 = calculatePortfolio(5, initial, receivables, salary, rate, retireYr);
+      const pYr10 = calculatePortfolio(10, initial, receivables, salary, rate, retireYr);
+      const pYr15 = calculatePortfolio(15, initial, receivables, salary, rate, retireYr);
+
+      document.getElementById('card-yr5-val').innerText = `${fmt((pYr5 * halfDrawdown) / 12)} / mo`;
+      document.getElementById('card-yr10-val').innerText = `${fmt((pYr10 * halfDrawdown) / 12)} / mo`;
+      document.getElementById('card-yr15-val').innerText = `${fmt((pYr15 * halfDrawdown) / 12)} / mo`;
+
+      // Update Chart Series
+      const nominalData = [];
+      const realData = [];
+      for (let t = 0; t <= 28; t++) {
+        let nom = calculatePortfolio(t, initial, receivables, salary, rate, retireYr);
+        let real = nom / Math.pow(1 + 0.025, t);
+        nominalData.push(nom);
+        realData.push(real);
+      }
+
+      chart.data.datasets[0].data = nominalData;
+      chart.data.datasets[1].data = realData;
+      chart.update();
+    }
+
+    // Attach Input Event Listeners
+    ['retireYr', 'drawdownRate', 'salary', 'receivables', 'initial', 'rate'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateDashboard);
+    });
+
+    // Initial Run
+    updateDashboard();
+  </script>
+</body>
+</html>
